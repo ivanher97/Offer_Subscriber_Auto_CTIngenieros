@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offer Subscriber — Presentación del proyecto</title>
+<meta name="description" content="Offer Subscriber: ETL de ofertas de empleo con arquitectura hexagonal, deduplicación en capas y enriquecimiento con IA. Presentación para RRHH y visión técnica para PM.">
+<style>
+    :root {
+        --bg: #081511;
+        --surface: #0e1f19;
+        --surface-2: #142b22;
+        --ink: #ecfdf5;
+        --ink-2: #9fc4b4;
+        --ink-3: #6f9384;
+        --accent: #10b981;
+        --accent-soft: rgba(16, 185, 129, 0.12);
+        --accent-line: rgba(16, 185, 129, 0.4);
+        --border: rgba(159, 196, 180, 0.16);
+        --radius: 16px;
+        --ok: #34d399;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+        font-family: "Segoe UI", -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        line-height: 1.65;
+        background-image:
+            radial-gradient(circle at 8% 95%, rgba(16, 185, 129, 0.09), transparent 34%),
+            radial-gradient(circle at 92% 5%, rgba(5, 150, 105, 0.08), transparent 32%);
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 1.5rem; }
+
+    .topbar {
+        position: sticky; top: 0; z-index: 50;
+        background: rgba(8, 21, 17, 0.9);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border);
+    }
+    .topbar .wrap {
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 1rem; padding-top: 0.7rem; padding-bottom: 0.7rem; flex-wrap: wrap;
+    }
+    .brand { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.6rem; }
+    .brand .v { font-size: 0.72rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent-line); padding: 0.1rem 0.55rem; border-radius: 999px; }
+    .seg { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem; gap: 0.25rem; }
+    .seg button {
+        font: inherit; font-size: 0.88rem; font-weight: 600;
+        color: var(--ink-2); background: transparent; border: 0;
+        padding: 0.45rem 1.1rem; border-radius: 999px; cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+    .seg button:hover { color: var(--ink); }
+    .seg button.active { background: var(--accent); color: #04170f; }
+
+    header.hero { text-align: center; padding: 4.5rem 0 3rem; }
+    .kicker { display: inline-block; font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+    h1 { font-size: clamp(2.2rem, 5.5vw, 3.6rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 1rem; }
+    h1 .grad { background: linear-gradient(100deg, #ecfdf5 30%, var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .pitch { font-size: 1.15rem; color: var(--ink-2); max-width: 680px; margin: 0 auto; }
+
+    .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2.6rem 0 0; }
+    .tile { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.15rem 1.25rem; text-align: left; }
+    .tile .label { font-size: 0.8rem; color: var(--ink-3); margin-bottom: 0.25rem; }
+    .tile .value { font-size: 1.9rem; font-weight: 650; color: var(--ink); line-height: 1.15; }
+    .tile .note { font-size: 0.8rem; color: var(--ink-2); margin-top: 0.2rem; }
+
+    section { padding: 2.4rem 0; }
+    h2 { font-size: 1.6rem; font-weight: 750; margin-bottom: 0.4rem; letter-spacing: -0.3px; }
+    .sub { color: var(--ink-2); margin-bottom: 1.6rem; max-width: 720px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; transition: border-color 0.25s, transform 0.25s; }
+    .card:hover { border-color: var(--accent-line); transform: translateY(-3px); }
+    .card .ico { font-size: 1.5rem; margin-bottom: 0.6rem; display: block; }
+    .card h3 { font-size: 1.02rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .card p { font-size: 0.92rem; color: var(--ink-2); }
+
+    .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.6rem 1.7rem; }
+    .panel.trouble { border-left: 3px solid #f87171; }
+    .panel.fix { border-left: 3px solid var(--ok); }
+    .panel h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .panel p, .panel li { color: var(--ink-2); font-size: 0.95rem; }
+    .panel ul { padding-left: 1.1rem; margin-top: 0.5rem; }
+    .panel li { margin-bottom: 0.35rem; }
+
+    .steps { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .step {
+        flex: 1 1 150px; font: inherit; text-align: left; cursor: pointer;
+        background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+        padding: 0.9rem 1rem; color: var(--ink-2); transition: all 0.2s;
+    }
+    .step .n {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 1.6rem; height: 1.6rem; border-radius: 50%; font-size: 0.8rem; font-weight: 700;
+        background: var(--surface-2); color: var(--ink-2); margin-bottom: 0.45rem;
+    }
+    .step .t { display: block; font-weight: 650; font-size: 0.92rem; color: var(--ink); }
+    .step:hover { border-color: var(--accent-line); }
+    .step.active { border-color: var(--accent); background: var(--accent-soft); }
+    .step.active .n { background: var(--accent); color: #04170f; }
+    .step-detail { background: var(--surface); border: 1px solid var(--accent-line); border-radius: var(--radius); padding: 1.5rem 1.7rem; min-height: 7.5rem; }
+    .step-detail h3 { font-size: 1.05rem; margin-bottom: 0.4rem; color: var(--accent); }
+    .step-detail p { color: var(--ink-2); font-size: 0.97rem; }
+    .hint { font-size: 0.8rem; color: var(--ink-3); margin-top: 0.6rem; }
+
+    .faq { display: grid; gap: 0.6rem; }
+    .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .faq-q {
+        width: 100%; font: inherit; font-weight: 650; font-size: 0.97rem; color: var(--ink);
+        background: transparent; border: 0; text-align: left; cursor: pointer;
+        padding: 1rem 1.3rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+    }
+    .faq-q::after { content: '+'; font-size: 1.3rem; color: var(--accent); transition: transform 0.25s; flex-shrink: 0; }
+    .faq-item.open .faq-q::after { transform: rotate(45deg); }
+    .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .faq-item.open .faq-a { max-height: 240px; }
+    .faq-a p { padding: 0 1.3rem 1.1rem; color: var(--ink-2); font-size: 0.93rem; }
+
+    /* ── Diagrama hexagonal ───────────────────────────────────── */
+    .arch-wrap { overflow-x: auto; margin-bottom: 1rem; border-radius: var(--radius); }
+    .arch-wrap svg { display: block; min-width: 700px; width: 100%; height: auto; }
+    .arch-hex, .arch-node { cursor: pointer; }
+    .arch-hex polygon { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; transition: all 0.2s; }
+    .arch-hex:hover polygon { stroke: var(--accent-line); }
+    .arch-hex.on polygon { stroke: var(--accent); fill: var(--accent-soft); }
+    .arch-node rect { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; transition: all 0.2s; }
+    .arch-node:hover rect { stroke: var(--accent-line); }
+    .arch-node.on rect { stroke: var(--accent); fill: var(--accent-soft); }
+    .arch-line { stroke: var(--border); stroke-width: 1.5; }
+    .arch-port { fill: var(--bg); stroke: var(--accent); stroke-width: 2; }
+    svg text { font-family: "Segoe UI", -apple-system, Roboto, Arial, sans-serif; }
+    .t-name { fill: var(--ink); font-size: 13px; font-weight: 600; }
+    .t-sub { fill: var(--ink-2); font-size: 10.5px; }
+    .t-side { fill: var(--ink-3); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; }
+
+    /* Capas de dedup */
+    .layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+    .layer { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.4rem 1.5rem; position: relative; }
+    .layer .num { position: absolute; top: 1.1rem; right: 1.3rem; font-size: 1.6rem; font-weight: 800; color: var(--surface-2); }
+    .layer h3 { font-size: 1rem; margin-bottom: 0.35rem; }
+    .layer p { font-size: 0.9rem; color: var(--ink-2); }
+    .layer.future { border-style: dashed; }
+    .layer .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 0.1rem 0.5rem; margin-bottom: 0.5rem; }
+
+    .decision { border-left: 3px solid var(--accent); }
+    .decision .why { color: var(--accent); font-weight: 650; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.4rem; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+    .chip { font-size: 0.85rem; color: var(--ink-2); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.85rem; }
+    .chip b { color: var(--ink); font-weight: 600; }
+
+    .estado { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.6rem 1.7rem; }
+    .estado h3 { margin-bottom: 0.6rem; }
+    .estado p { color: var(--ink-2); font-size: 0.95rem; margin-bottom: 0.5rem; }
+
+    body[data-view="hr"] .only-pm { display: none; }
+    body[data-view="pm"] .only-hr { display: none; }
+
+    footer { border-top: 1px solid var(--border); margin-top: 3rem; padding: 2.2rem 0 2.6rem; text-align: center; }
+    footer .sig { font-weight: 700; font-size: 1.05rem; }
+    footer .role { color: var(--ink-2); font-size: 0.9rem; }
+    footer .conf { color: var(--ink-3); font-size: 0.8rem; margin-top: 0.9rem; max-width: 560px; margin-left: auto; margin-right: auto; }
+
+    @media (max-width: 860px) {
+        .tiles { grid-template-columns: repeat(2, 1fr); }
+        .duo { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+        .tiles { grid-template-columns: 1fr; }
+        header.hero { padding-top: 3rem; }
+    }
+</style>
+</head>
+<body data-view="hr">
+
+<nav class="topbar">
+    <div class="wrap">
+        <div class="brand">🧲 Offer Subscriber <span class="v">V0.1 · en desarrollo activo</span></div>
+        <div class="seg" role="tablist" aria-label="Nivel de detalle">
+            <button type="button" data-view-btn="hr" class="active" role="tab" aria-selected="true">👥 Visión general</button>
+            <button type="button" data-view-btn="pm" role="tab" aria-selected="false">⚙️ Visión técnica</button>
+        </div>
+    </div>
+</nav>
+
+<header class="hero">
+    <div class="wrap">
+        <span class="kicker">ETL de ofertas de empleo · arquitectura hexagonal</span>
+        <h1><span class="grad">Todas las ofertas de empleo,</span><br>en un Excel limpio cada mañana</h1>
+        <p class="pitch">Cada día a las 08:00, sin que nadie la ejecute, esta aplicación recoge las ofertas de las alertas de correo y de los portales web, elimina las duplicadas y las consolida en un único Excel. Y una capa de IA en desarrollo las clasificará y cazará duplicados entre portales.</p>
+
+        <div class="tiles">
+            <div class="tile"><div class="label">Tests automatizados</div><div class="value">120</div><div class="note">Unitarios + integración</div></div>
+            <div class="tile"><div class="label">Errores de tipado (mypy --strict)</div><div class="value">0</div><div class="note">En el código de producción</div></div>
+            <div class="tile"><div class="label">Capas de deduplicación</div><div class="value">2</div><div class="note">Y una 3.ª con IA en camino</div></div>
+            <div class="tile"><div class="label">Cita diaria automática</div><div class="value">08:00</div><div class="note">Programador de tareas de Windows</div></div>
+        </div>
+    </div>
+</header>
+
+<main class="wrap">
+
+    <!-- ══════════ VISIÓN GENERAL (RRHH) ══════════ -->
+    <section class="only-hr">
+        <h2>El problema y la solución</h2>
+        <p class="sub">Seguir el mercado laboral significa revisar cada día decenas de alertas de Indeed e InfoJobs en el correo, más los portales — con las mismas ofertas repetidas por todas partes.</p>
+        <div class="duo">
+            <div class="panel trouble">
+                <h3>😓 Antes</h3>
+                <ul>
+                    <li>Abrir una a una las alertas de correo de cada portal.</li>
+                    <li>Repasar además los listados web por si algo no llegó por correo.</li>
+                    <li>La misma oferta aparece tres veces con títulos ligeramente distintos.</li>
+                    <li>Apuntarlo todo a mano en algún sitio… si hay tiempo.</li>
+                </ul>
+            </div>
+            <div class="panel fix">
+                <h3>✨ Ahora</h3>
+                <ul>
+                    <li>La aplicación se ejecuta sola cada mañana a las 08:00.</li>
+                    <li>Lee las alertas del buzón y los portales, todo junto.</li>
+                    <li>Detecta y descarta las ofertas repetidas automáticamente.</li>
+                    <li>Deja un único Excel ordenado, listo para trabajar sobre él.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="only-hr">
+        <h2>Lo que aporta</h2>
+        <div class="cards">
+            <div class="card"><span class="ico">🤖</span><h3>Trabaja sola</h3><p>No hay que acordarse de nada: se programa sola en Windows y cada mañana el Excel está actualizado. También puede lanzarse a mano cuando se quiera.</p></div>
+            <div class="card"><span class="ico">🧹</span><h3>Sin duplicados</h3><p>Reconoce la misma oferta aunque llegue por dos vías o se republique con pequeños cambios, y solo guarda una.</p></div>
+            <div class="card"><span class="ico">🔐</span><h3>Acceso seguro al correo</h3><p>Se conecta al buzón con la autorización oficial de Microsoft, con permiso de solo lectura. Nunca pide tu contraseña y el acceso se puede revocar cuando quieras.</p></div>
+            <div class="card"><span class="ico">✨</span><h3>IA en camino</h3><p>Próximamente: clasificación automática por tipo de puesto, deducción de la empresa y aviso cuando la misma oferta aparece en dos portales. La IA sugiere; la persona decide.</p></div>
+        </div>
+    </section>
+
+    <section class="only-hr">
+        <h2>Preguntas frecuentes</h2>
+        <div class="faq">
+            <div class="faq-item">
+                <button type="button" class="faq-q" aria-expanded="false">¿Tengo que darle mi contraseña del correo?</button>
+                <div class="faq-a"><p>No, nunca. La primera vez se abre la pantalla oficial de inicio de sesión de Microsoft y tú autorizas el acceso. La aplicación no ve ni guarda tu contraseña, y puedes retirar el permiso desde tu cuenta cuando quieras.</p></div>
+            </div>
+            <div class="faq-item">
+                <button type="button" class="faq-q" aria-expanded="false">¿Puede borrar o mover algo de mi buzón?</button>
+                <div class="faq-a"><p>No. El permiso que se solicita es exclusivamente de lectura de correo. La aplicación no puede enviar, borrar, mover ni modificar nada.</p></div>
+            </div>
+            <div class="faq-item">
+                <button type="button" class="faq-q" aria-expanded="false">¿Y si la misma oferta llega por dos sitios?</button>
+                <div class="faq-a"><p>Hay dos filtros: uno exacto (misma dirección web de la oferta) y otro "difuso" que detecta republicaciones con cambios menores en el título. Además, la capa de IA en desarrollo detectará la misma oferta publicada en portales distintos y la marcará con un porcentaje de confianza — sin borrar nada: la decisión final es siempre humana.</p></div>
+            </div>
+            <div class="faq-item">
+                <button type="button" class="faq-q" aria-expanded="false">¿Tengo que acordarme de ejecutarla?</button>
+                <div class="faq-a"><p>No. Al instalarse, la propia aplicación se programa en Windows para ejecutarse cada día a las 08:00. Si un día quieres recuperar ofertas de fechas anteriores, tiene una pantalla sencilla para pedir "los últimos N días" con un clic.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════ PIPELINE (compartido, con doble lectura) ══════════ -->
+    <section>
+        <h2>Cómo funciona, paso a paso</h2>
+        <p class="sub">Haz clic en cada paso para ver el detalle. La explicación cambia según la vista elegida arriba (general o técnica).</p>
+        <div class="steps" id="steps"></div>
+        <div class="step-detail" id="stepDetail"></div>
+        <p class="hint">💡 Consejo: cambia entre «Visión general» y «Visión técnica» en la barra superior y vuelve a pulsar un paso.</p>
+    </section>
+
+    <!-- ══════════ VISIÓN TÉCNICA (PM) ══════════ -->
+    <section class="only-pm">
+        <h2>Arquitectura hexagonal (ports &amp; adapters)</h2>
+        <p class="sub">No es una etiqueta: el núcleo no importa ni una línea de O365, openpyxl o google-genai. Haz clic en cualquier pieza del diagrama para ver su papel.</p>
+
+        <div class="arch-wrap">
+            <svg viewBox="0 0 760 470" role="img" aria-label="Diagrama de arquitectura hexagonal de Offer Subscriber">
+                <!-- Líneas de conexión -->
+                <line class="arch-line" x1="200" y1="155" x2="252" y2="190"/>
+                <line class="arch-line" x1="200" y1="315" x2="252" y2="280"/>
+                <line class="arch-line" x1="558" y1="84"  x2="510" y2="172"/>
+                <line class="arch-line" x1="558" y1="184" x2="510" y2="214"/>
+                <line class="arch-line" x1="558" y1="284" x2="510" y2="256"/>
+                <line class="arch-line" x1="558" y1="384" x2="510" y2="298"/>
+
+                <!-- Etiquetas laterales -->
+                <text class="t-side" x="110" y="100" text-anchor="middle">CONDUCEN LA APP</text>
+                <text class="t-side" x="650" y="38" text-anchor="middle">CONDUCIDOS POR EL CORE</text>
+
+                <!-- Hexágono exterior: core/application -->
+                <g class="arch-hex" data-arch="application" tabindex="0" role="button" aria-label="Capa de aplicación">
+                    <polygon points="380,85 250,160 250,310 380,385 510,310 510,160"/>
+                    <text class="t-name" x="380" y="122" text-anchor="middle">core/application</text>
+                    <text class="t-sub" x="380" y="138" text-anchor="middle">casos de uso · puertos</text>
+                </g>
+
+                <!-- Hexágono interior: core/domain -->
+                <g class="arch-hex" data-arch="domain" tabindex="0" role="button" aria-label="Dominio">
+                    <polygon points="380,157 312,196 312,274 380,313 448,274 448,196"/>
+                    <text class="t-name" x="380" y="230" text-anchor="middle">core/domain</text>
+                    <text class="t-sub" x="380" y="246" text-anchor="middle">entidades · reglas</text>
+                </g>
+
+                <!-- Puertos (puntos en el borde del hexágono) -->
+                <circle class="arch-port" cx="252" cy="190" r="5"/>
+                <circle class="arch-port" cx="252" cy="280" r="5"/>
+                <circle class="arch-port" cx="510" cy="172" r="5"/>
+                <circle class="arch-port" cx="510" cy="214" r="5"/>
+                <circle class="arch-port" cx="510" cy="256" r="5"/>
+                <circle class="arch-port" cx="510" cy="298" r="5"/>
+
+                <!-- Adaptadores conductores (izquierda) -->
+                <g class="arch-node" data-arch="gui" tabindex="0" role="button" aria-label="Interfaz gráfica">
+                    <rect x="20" y="125" width="180" height="60" rx="12"/>
+                    <text class="t-name" x="110" y="151" text-anchor="middle">🖥️ GUI de escritorio</text>
+                    <text class="t-sub" x="110" y="168" text-anchor="middle">CustomTkinter · bajo demanda</text>
+                </g>
+                <g class="arch-node" data-arch="scheduler" tabindex="0" role="button" aria-label="Programador de tareas">
+                    <rect x="20" y="285" width="180" height="60" rx="12"/>
+                    <text class="t-name" x="110" y="311" text-anchor="middle">⏰ Task Scheduler</text>
+                    <text class="t-sub" x="110" y="328" text-anchor="middle">autoregistro · diario 08:00</text>
+                </g>
+
+                <!-- Adaptadores conducidos (derecha) -->
+                <g class="arch-node" data-arch="outlook" tabindex="0" role="button" aria-label="Adaptador Outlook">
+                    <rect x="560" y="55" width="180" height="58" rx="12"/>
+                    <text class="t-name" x="650" y="80" text-anchor="middle">📬 Outlook / Graph</text>
+                    <text class="t-sub" x="650" y="97" text-anchor="middle">OAuth2 · parsers por remitente</text>
+                </g>
+                <g class="arch-node" data-arch="sitemap" tabindex="0" role="button" aria-label="Adaptador de sitemaps">
+                    <rect x="560" y="155" width="180" height="58" rx="12"/>
+                    <text class="t-name" x="650" y="180" text-anchor="middle">🗺️ Sitemaps XML</text>
+                    <text class="t-sub" x="650" y="197" text-anchor="middle">requests + lxml · filtros</text>
+                </g>
+                <g class="arch-node" data-arch="excel" tabindex="0" role="button" aria-label="Adaptador de almacenamiento Excel">
+                    <rect x="560" y="255" width="180" height="58" rx="12"/>
+                    <text class="t-name" x="650" y="280" text-anchor="middle">📊 Excel (storage)</text>
+                    <text class="t-sub" x="650" y="297" text-anchor="middle">openpyxl · datastore local</text>
+                </g>
+                <g class="arch-node" data-arch="gemini" tabindex="0" role="button" aria-label="Adaptador de IA Gemini">
+                    <rect x="560" y="355" width="180" height="58" rx="12"/>
+                    <text class="t-name" x="650" y="380" text-anchor="middle">✨ Gemini (IA)</text>
+                    <text class="t-sub" x="650" y="397" text-anchor="middle">google-genai · en desarrollo</text>
+                </g>
+            </svg>
+        </div>
+        <div class="step-detail" id="archDetail"></div>
+    </section>
+
+    <section class="only-pm">
+        <h2>Deduplicación en capas</h2>
+        <p class="sub">Cada capa ataca un tipo de duplicado distinto, de la más barata a la más cara. Ninguna capa borra datos históricos por decisión propia.</p>
+        <div class="layers">
+            <div class="layer">
+                <span class="num">1</span>
+                <h3>Determinista</h3>
+                <p>URL canónica + hash del contenido. La misma oferta llegada dos veces por la misma vía se descarta a coste computacional cero, antes de tocar nada más.</p>
+            </div>
+            <div class="layer">
+                <span class="num">2</span>
+                <h3>Difusa</h3>
+                <p>Similitud de cadenas con <b>RapidFuzz</b> (distancia tipo Levenshtein): caza republicaciones con cambios menores en el título que la capa exacta no puede ver.</p>
+            </div>
+            <div class="layer future">
+                <span class="num">3</span>
+                <span class="tag">En desarrollo</span>
+                <h3>Cross-portal con IA</h3>
+                <p>La misma oferta en Indeed y en InfoJobs tiene URLs distintas: invisible para las capas 1 y 2. La IA compara una ventana reciente de ofertas y escribe un <b>% de confianza</b> (<code>duplicate_trust</code>) y la oferta original sospechada (<code>duplicate_of</code>). <b>Marca, nunca borra</b>: la decisión final es humana.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="only-pm">
+        <h2>Decisiones técnicas y su porqué</h2>
+        <div class="cards">
+            <div class="card decision"><span class="why">Independencia</span><h3>Hexagonal de verdad, no de nombre</h3><p>El core define puertos (extracción, almacenamiento, deduplicación, enriquecimiento) y no conoce ninguna implementación. Cambiar Gemini por otro proveedor, o Excel por SQLite, es escribir un adaptador nuevo — el núcleo y sus 120 tests no se tocan.</p></div>
+            <div class="card decision"><span class="why">Seguridad</span><h3>OAuth2 con scope mínimo</h3><p>Acceso al buzón vía Microsoft Graph con consentimiento OAuth2 y permiso de solo lectura (<code>Mail.Read</code>), token cacheado localmente. Ni contraseñas compartidas ni protocolos legacy: acceso auditable y revocable por el usuario.</p></div>
+            <div class="card decision"><span class="why">Adopción</span><h3>Excel como almacenamiento</h3><p>El usuario final vive en Excel; entregarle su herramienta de siempre elimina la fricción de adopción. El puerto de storage deja abierta la migración a base de datos sin reescribir el core.</p></div>
+            <div class="card decision"><span class="why">Robustez</span><h3>La IA nunca invalida el ETL</h3><p>ETL y enriquecimiento son módulos independientes: cuando arranca la IA, el Excel ya está guardado. Un fallo o un coste inesperado de la API jamás compromete los datos recogidos. Además el enriquecimiento es idempotente: no re-paga tokens por filas ya procesadas.</p></div>
+            <div class="card decision"><span class="why">Confianza cero en el LLM</span><h3>Validación de toda salida de IA</h3><p>La clasificación de puesto se valida contra una lista cerrada definida por el usuario (o cae a "Sin clasificar"); si la empresa no es deducible, el campo queda vacío — <b>la IA nunca inventa</b>. Nada de lo que diga el modelo se escribe sin pasar un filtro determinista.</p></div>
+            <div class="card decision"><span class="why">Producto completo</span><h3>La app instala su propia automatización</h3><p>Al ejecutarse se autoregistra en el Programador de tareas de Windows (diaria, 08:00). La automatización es parte del producto, no un paso manual de un documento de instalación que alguien olvidará.</p></div>
+        </div>
+    </section>
+
+    <section class="only-pm">
+        <h2>Calidad de ingeniería</h2>
+        <div class="cards">
+            <div class="card"><span class="ico">🧪</span><h3>120 tests, dos niveles</h3><p>Suite de pytest con tests unitarios (dominio, casos de uso, parsers) e integración (adaptadores de Outlook, sitemaps, Excel, Gemini y flujo E2E), con fixtures dedicadas. El núcleo se desarrolló con cobertura cercana al total (~97 % en la última medición).</p></div>
+            <div class="card"><span class="ico">🛡️</span><h3>Tipado estático estricto</h3><p><code>mypy --strict</code> con el plugin de Pydantic: 0 errores en el código de producción. Una categoría entera de bugs (tipos, nulos, firmas) se detecta antes de ejecutar nada.</p></div>
+            <div class="card"><span class="ico">📐</span><h3>Modelado con Pydantic v2</h3><p>Entidades y configuración validadas en tiempo de ejecución (pydantic-settings para el <code>.env</code>): los datos malformados fallan en la frontera del sistema, no en mitad del pipeline.</p></div>
+        </div>
+    </section>
+
+    <section class="only-pm">
+        <h2>Stack tecnológico</h2>
+        <div class="chips">
+            <span class="chip"><b>Python 3.12</b></span>
+            <span class="chip"><b>O365 / Microsoft Graph</b> · OAuth2, Mail.Read</span>
+            <span class="chip"><b>requests + lxml</b> · sitemaps y parseo HTML</span>
+            <span class="chip"><b>RapidFuzz</b> · deduplicación difusa</span>
+            <span class="chip"><b>openpyxl</b> · storage Excel</span>
+            <span class="chip"><b>google-genai</b> · enriquecimiento IA (Gemini)</span>
+            <span class="chip"><b>Pydantic v2</b> · entidades y settings</span>
+            <span class="chip"><b>CustomTkinter</b> · GUI</span>
+            <span class="chip"><b>pytest</b> · 120 tests</span>
+            <span class="chip"><b>mypy --strict</b> · tipado</span>
+            <span class="chip"><b>PyInstaller</b> · empaquetado .exe</span>
+        </div>
+    </section>
+
+    <section class="only-pm">
+        <h2>Estado del proyecto</h2>
+        <div class="estado">
+            <h3>En desarrollo activo — capa de IA en construcción</h3>
+            <p>El ETL está completo y en producción diaria (extracción, deduplicación en 2 capas, Excel, automatización). Es el proyecto técnicamente más ambicioso del portfolio y el que marca el estándar de calidad: arquitectura hexagonal real, 120 tests y tipado estricto.</p>
+            <p><b>En curso (julio 2026):</b> capa de enriquecimiento con Gemini — clasificación de <code>job_group</code> contra lista cerrada, deducción de <code>company</code> y deduplicación cross-portal con porcentaje de confianza. Roadmap de 7 fases, en fase 2. Primero como acción manual desde la GUI para controlar el gasto de API; en producción, encadenada tras cada ETL mediante configuración.</p>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <div class="wrap">
+        <div class="sig">Iván Herrero Galván</div>
+        <div class="role">Applied AI &amp; Automation</div>
+        <p class="conf">El código fuente de este proyecto es confidencial por motivos empresariales. Esta página describe el producto y su arquitectura a alto nivel, sin exponer implementación.</p>
+    </div>
+</footer>
+
+<script>
+(function () {
+    'use strict';
+
+    var viewBtns = document.querySelectorAll('[data-view-btn]');
+    viewBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.body.dataset.view = btn.dataset.viewBtn;
+            viewBtns.forEach(function (b) {
+                b.classList.toggle('active', b === btn);
+                b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+            });
+            renderStepDetail();
+        });
+    });
+
+    /* ── Pipeline ── */
+    var STEPS = [
+        {
+            t: 'Se despierta sola',
+            hr: 'Cada mañana a las 08:00, Windows ejecuta la aplicación sin que nadie tenga que acordarse: ella misma se programó al instalarse. Y si un día hace falta recuperar ofertas de fechas pasadas, hay una pantalla sencilla para pedir "los últimos N días".',
+            pm: 'La app se autoregistra en el Task Scheduler de Windows (ejecución diaria a las 08:00, sin ventana). El mismo pipeline es invocable bajo demanda desde la GUI CustomTkinter con rango de días configurable. Un único punto de composición (composition_root) cablea puertos y adaptadores en ambos modos.'
+        },
+        {
+            t: 'Recoge las ofertas',
+            hr: 'Lee las alertas de empleo que llegan al buzón (Indeed, InfoJobs) y además consulta directamente los listados de los portales. El acceso al correo usa la autorización oficial de Microsoft, con permiso de solo lectura y sin conocer tu contraseña.',
+            pm: 'Dos adaptadores tras el mismo puerto de extracción: Outlook vía Microsoft Graph (O365, OAuth2 con scope Mail.Read, token cacheado) con parsers específicos por remitente que comparten contrato de llamada, y sitemaps XML de portales (requests + lxml) con filtros por palabras clave configurables.'
+        },
+        {
+            t: 'Limpia y deduplica',
+            hr: 'Antes de guardar nada, comprueba si cada oferta ya existe: la detecta aunque haya llegado por otra vía o se haya republicado con pequeños cambios en el título. Solo pasa lo nuevo de verdad.',
+            pm: 'Normalización a entidades tipadas (Pydantic) con URL canónica, offer_id y hash como value objects. Dedup en dos capas: exacta (URL canónica + hash, coste cero) y difusa (RapidFuzz sobre títulos). La tercera capa —IA cross-portal— está en desarrollo y solo marcará, nunca borrará.'
+        },
+        {
+            t: 'Consolida en Excel',
+            hr: 'Todo lo nuevo se añade al Excel de siempre, ordenado y con el mismo formato: portal de origen, título, enlace, fecha de detección… Un único sitio donde mirar.',
+            pm: 'El adaptador de storage (openpyxl) persiste con esquema de columnas estable (título, portal, URL, fecha de detección, y columnas reservadas para company y job_group). El puerto de storage aísla esta decisión: migrar a SQLite mañana no toca el core.'
+        },
+        {
+            t: 'Enriquece con IA (en camino)',
+            hr: 'La siguiente pieza, ya en construcción: la IA clasificará cada oferta por tipo de puesto, deducirá la empresa y avisará cuando la misma oferta esté en dos portales — siempre proponiendo, nunca borrando. La última palabra es de la persona.',
+            pm: 'EnrichOffersUseCase tras un puerto de enriquecimiento (el core no importa google-genai). Clasificación validada contra lista cerrada del usuario, company vacía si no es deducible (la IA no inventa), dedup cross-portal con duplicate_trust/duplicate_of. Idempotente y desacoplado: un fallo de la API nunca invalida el ETL ya persistido.'
+        }
+    ];
+
+    var stepsEl = document.getElementById('steps');
+    var stepDetailEl = document.getElementById('stepDetail');
+    var currentStep = 0;
+
+    STEPS.forEach(function (s, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'step' + (i === 0 ? ' active' : '');
+        b.innerHTML = '<span class="n">' + (i + 1) + '</span><span class="t">' + s.t + '</span>';
+        b.addEventListener('click', function () {
+            currentStep = i;
+            stepsEl.querySelectorAll('.step').forEach(function (el, j) {
+                el.classList.toggle('active', j === i);
+            });
+            renderStepDetail();
+        });
+        stepsEl.appendChild(b);
+    });
+
+    function renderStepDetail() {
+        var s = STEPS[currentStep];
+        var mode = document.body.dataset.view === 'pm' ? 'pm' : 'hr';
+        stepDetailEl.innerHTML = '<h3>Paso ' + (currentStep + 1) + ' — ' + s.t + '</h3><p>' + s[mode] + '</p>';
+    }
+
+    /* ── Diagrama de arquitectura ── */
+    var ARCH = {
+        domain: { t: 'core/domain — el corazón del sistema', d: 'Entidades del negocio (la oferta de empleo, la configuración de filtros), value objects (URL canónica, identificador de oferta, hash de contenido), enums y excepciones propias. Python puro, sin una sola dependencia externa: aquí viven las reglas, no la fontanería.' },
+        application: { t: 'core/application — casos de uso y puertos', d: 'Los tres casos de uso (procesar ofertas, deduplicar, enriquecer con IA) orquestan el dominio a través de puertos: interfaces abstractas de extracción, almacenamiento, deduplicación y enriquecimiento. El core declara QUÉ necesita; nunca sabe CÓMO se implementa. No importa O365, ni openpyxl, ni google-genai.' },
+        gui: { t: 'GUI de escritorio — adaptador conductor', d: 'Interfaz CustomTkinter para el uso bajo demanda: recuperar los últimos N días con un clic y, en la fase actual del roadmap, lanzar el enriquecimiento IA con botón propio para validar resultados controlando el gasto de API.' },
+        scheduler: { t: 'Task Scheduler — adaptador conductor', d: 'La aplicación registra por sí misma su tarea diaria (08:00) en el Programador de tareas de Windows. La ejecución desatendida es parte del producto: no depende de que alguien configure nada a mano.' },
+        outlook: { t: 'Outlook / Microsoft Graph — adaptador de extracción', d: 'Autenticación OAuth2 con consentimiento del usuario y scope mínimo de solo lectura (Mail.Read), token cacheado localmente. Parsers dedicados por remitente (Indeed, InfoJobs) que comparten el mismo contrato, de modo que añadir un portal nuevo es añadir un parser, no tocar el flujo.' },
+        sitemap: { t: 'Sitemaps XML — adaptador de extracción', d: 'Segunda fuente tras el mismo puerto: descarga de sitemaps de portales con requests, parseo con lxml y filtrado por palabras clave configurables. El caso de uso ni distingue ni necesita distinguir de qué fuente vino cada oferta.' },
+        excel: { t: 'Excel — adaptador de almacenamiento', d: 'Persistencia con openpyxl en el formato en el que el usuario final ya trabaja a diario: adopción inmediata, cero curva de aprendizaje. Al estar detrás del puerto de storage, migrar a SQLite o a una base de datos real es un adaptador nuevo, no una reescritura.' },
+        gemini: { t: 'Gemini — adaptador de IA (en desarrollo)', d: 'Enriquecimiento vía google-genai detrás del puerto correspondiente: clasificación de job_group contra lista cerrada, deducción de company (vacía si no es deducible — la IA nunca inventa) y deduplicación cross-portal con porcentaje de confianza. Cambiar de proveedor de IA mañana significa reescribir solo esta caja.' }
+    };
+
+    var archDetailEl = document.getElementById('archDetail');
+    var archNodes = document.querySelectorAll('[data-arch]');
+
+    function selectArch(key) {
+        archNodes.forEach(function (n) {
+            n.classList.toggle('on', n.dataset.arch === key);
+        });
+        var a = ARCH[key];
+        archDetailEl.innerHTML = '<h3>' + a.t + '</h3><p>' + a.d + '</p>';
+    }
+
+    archNodes.forEach(function (n) {
+        n.addEventListener('click', function () { selectArch(n.dataset.arch); });
+        n.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectArch(n.dataset.arch); }
+        });
+    });
+
+    /* ── FAQ ── */
+    document.querySelectorAll('.faq-q').forEach(function (q) {
+        q.addEventListener('click', function () {
+            var item = q.parentElement;
+            var wasOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item.open').forEach(function (o) { o.classList.remove('open'); });
+            if (!wasOpen) item.classList.add('open');
+            q.setAttribute('aria-expanded', String(!wasOpen));
+        });
+    });
+
+    renderStepDetail();
+    selectArch('domain');
+})();
+</script>
+
+</body>
+</html>
