@@ -43,8 +43,8 @@ Un detalle de diseño importante: ETL y enriquecimiento son módulos **independi
 
 Cada capa ataca un tipo de duplicado distinto, de la más barata a la más cara:
 
-1. **Determinista**: URL canónica + hash del contenido. La misma oferta llegada dos veces por la misma vía se descarta a coste computacional cero.
-2. **Difusa**: similitud de cadenas con **RapidFuzz** (distancia tipo Levenshtein), que caza republicaciones con cambios menores en el título que la capa exacta no puede ver.
+1. **Determinista**: el identificador de cada oferta es el hash de su URL canónica (normalizada y validada con Pydantic), y cada una guarda además un hash de su contenido. Si llega una oferta con un ID y un hash que ya existen, se descarta a coste computacional cero.
+2. **Difusa**: si el ID ya existe pero el hash ha cambiado (el portal ha editado la oferta), **RapidFuzz** compara la descripción nueva con la guardada. Por encima de un umbral configurable (90 % por defecto) el cambio se considera menor y se ignora; por debajo, es un cambio significativo y se registra. Así una coma corregida no genera ruido, pero una oferta reescrita sí aparece.
 3. **Cross-portal con IA**: la misma oferta en Indeed y en InfoJobs tiene URLs distintas — invisible para las capas anteriores. La IA compara una ventana reciente de ofertas y escribe un **porcentaje de confianza** y la oferta original sospechada. **Marca, nunca borra**: la decisión final es humana.
 
 ## 🏗️ Arquitectura del Proyecto
